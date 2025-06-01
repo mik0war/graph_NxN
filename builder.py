@@ -1,85 +1,134 @@
-def generate_states(n):
-    edges_with_labels = []
-    for i in range(n+1):
-        for j in range(n+1):
-            if i+j > n:
-                continue
-            if i-1>= 0:
-                edges_with_labels.append((f'{i}{j}', f'{i-1}{j}', {'label': r'\mu_2', 'color': 'red'}))
-            if j + 1 + i <= n:
-                edges_with_labels.append((f'{i}{j}' ,f'{i}{j+1}', {'label': r'\lambda_1', 'color': 'yellow'}))
-            if i+j<=n and j-1 >= 0:
-                edges_with_labels.append((f'{i}{j}', f'{i+1}{j-1}', {'label': r'\lambda_2', 'color': 'black'}))
-            if j == 0 and i+1 <= n:
-                edges_with_labels.append((f'{i}{j}', f'{i + 1}{j}', {'label': r'\lambda_2', 'color': 'black'}))
-            if j-1>=0:
-                edges_with_labels.append((f'{i}{j}', f'{i}{j - 1}', {'label': r'\mu_1', 'color': 'grey'}))
+from numpy import ndarray
 
-    return edges_with_labels
-
-def get_states_array(n):
-    pos = []
-    for i in range(n + 1):
-        for j in range(n + 1):
-            if i + j > n:
-                continue
-
-            pos.append(f'{i}{j}')
-    return pos
-
-def get_pos_array(n):
-    pos = {}
-    for i in range(n+1):
-        for j in range(n+1):
-            if i + j > n:
-                continue
-
-            pos[f'{i}{j}'] = (j, n - i)
-    return pos
-
-def build_equals(states_array, edges_with_labels):
-    kolm = [[] for _ in range(states_array.__len__())]
-
-    for edge in edges_with_labels:
-        x = states_array.index(edge[0])
-        y = states_array.index(edge[1])
-        kolm[x].append({'sign': -1, 'value': edge[2]["label"], 'state': x})
-        kolm[y].append({'sign': 1, 'value': edge[2]["label"], 'state': x})
-    return kolm
+from data_types.equations_type import EquationSystem, MatrixElement
+from data_types.labels import *
+from data_types.state import State, Edge
+from visualiser import Visualiser
 
 
-def build_matrix(matrix_size, kolm_system, mu1, mu2, lam1, lam2):
-    mm = [[0 for _ in range(matrix_size)] for _ in range(matrix_size)]
-
-    for index, kol in enumerate(kolm_system):
-        for val in kol:
-            mm[index][val['state']] += val["sign"] * find_value(val["value"], mu1, mu2, lam1, lam2)
-
-    return mm
-
-def find_value(value, mu1, mu2, lam1, lam2):
-
-    dict_values = {
-        r'\lambda_1': lam1,
-        r'\lambda_2': lam2,
-        r'\mu_1': mu1,
-        r'\mu_2': mu2
-    }
-    return dict_values[value]
+class Parameters:
+    def __init__(self, lam1: int, lam2: int, mu1: int, mu2: int):
+        self.lam_one = LambdaOne(lam1)
+        self.lam_two = LambdaTwo(lam2)
+        self.mu_one = MuOne(mu1)
+        self.mu_two = MuTwo(mu2)
 
 
-def build_matrix_view(matrix_size, kolm_system):
-    mm = [['' for _ in range(matrix_size)] for _ in range(matrix_size)]
+class Builder:
+    def __init__(self, parameters: Parameters):
+        self.__parameters = parameters
+        self.__states: dict[str | int, State] | None = None
+        self.__edges: list[Edge] | None = None
+        self.__kolm_system: EquationSystem | None = None
+        self.__matrix: list[list[MatrixElement]] | None = None
+        self.__buffer_size: int = 0
 
-    for index, kol in enumerate(kolm_system):
-        for val in kol:
-            mm[index][val['state']] += f'{val["sign"]}'[:-1] + val["value"]
+    def build_states(self, buffer_size: int):
 
-    for index_line, line in enumerate(mm):
-        for index_element, element in enumerate(line):
-            if not element:
-                mm[index_line][index_element] = '0'
+        states = {}
+        index = 0
+        for i in range(buffer_size + 1):
+            for j in range(buffer_size + 1):
+                if i + j > buffer_size:
+                    continue
 
-    return mm
+                states[index] = State(index, f'{i}{j}')
+                states[f'{i}{j}'] = states[index]
+                index += 1
 
+        self.__states = states
+        return self.__states
 
+    def build_edges(self, buffer_size: int):
+        if not self.__states:
+            self.build_states(buffer_size)
+
+        edges_with_labels = []
+
+        for i in range(buffer_size + 1):
+            for j in range(buffer_size + 1):
+
+                if i + j > buffer_size:
+                    continue
+
+                conditions = [
+                    [j + 1 + i <= buffer_size, f'{i}{j + 1}', self.__parameters.lam_one],
+                    [i + j <= buffer_size and j - 1 >= 0, f'{i + 1}{j - 1}', self.__parameters.lam_two],
+                    [j == 0 and i + 1 <= buffer_size, f'{i + 1}{j}', self.__parameters.lam_two],
+                    [i - 1 >= 0, f'{i - 1}{j}', self.__parameters.mu_two],
+                    [j - 1 >= 0, f'{i}{j - 1}', self.__parameters.mu_one],
+                ]
+
+                for condition in conditions:
+                    if condition[0]:
+                        edges_with_labels.append(Edge(self.__states[f'{i}{j}'],
+                                                      self.__states[condition[1]],
+                                                      condition[2]))
+
+        self.__edges = edges_with_labels
+        return edges_with_labels
+
+    def build_equation_system(self, buffer_size: int):
+        if not self.__edges:
+            self.build_edges(buffer_size)
+
+        self.__kolm_system = EquationSystem(buffer_size, self.__states)
+        self.__kolm_system.fill_equations(self.__edges)
+
+        return self.__kolm_system
+
+    def build_matrix(self, buffer_size: int):
+        if not self.__kolm_system:
+            self.build_equation_system(buffer_size)
+
+        self.__matrix = self.__kolm_system.map_to_matrix()
+        self.__buffer_size = buffer_size
+
+        matrix = [[0 for _ in range(self.__matrix.__len__())]
+                  for _ in range(self.__matrix.__len__())]
+
+        for i in range(self.__matrix.__len__()):
+            for j in range(self.__matrix.__len__()):
+                matrix[i][j] = self.__matrix[i][j].get_value()
+
+        return matrix
+
+    def visualise_probabilities(self, visualiser: Visualiser, t_values: ndarray, p_values: ndarray):
+
+        leg = []
+        for state in self.__states:
+            if isinstance(state, int):
+                leg.append(rf'${self.__states[state].map_to_latex()}$')
+        leg.append('1')
+
+        visualiser.visualise_probability(leg, t_values, p_values)
+
+    def build_graph_positions(self, g) -> dict[str, tuple[int, int]]:
+        for edge in self.__edges:
+            edge.add_to_graph(g)
+
+        pos = {}
+        for i in range(self.__buffer_size + 1):
+            for j in range(self.__buffer_size + 1):
+                if i + j > self.__buffer_size:
+                    break
+
+                pos[f'{i}{j}'] = (j, self.__buffer_size - i)
+        return pos
+
+    def build_matrix_latex(self):
+        if not self.__matrix:
+            return r""
+
+        n_cols = len(self.__matrix) if self.__matrix else 0
+        cols = "c" * n_cols
+        latex_rows = []
+        for row in self.__matrix:
+            processed_row = [item.get_latex_value() for item in row]
+            latex_rows.append(" & ".join(processed_row))
+
+        latex_body = " \\\\ ".join(latex_rows)
+        return rf"$\left[\begin{{array}}{{{cols}}} {latex_body} \end{{array}}\right]$"
+
+    def build_latex_evaluation_system(self, ):
+        return self.__kolm_system.map_to_latex()
