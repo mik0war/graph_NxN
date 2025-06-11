@@ -22,7 +22,7 @@ lam2 = 9000
 mu1 = 200
 mu2 = 700
 
-BUFFER_SIZE = 7
+BUFFER_SIZE = 3
 
 parameters = builder.Parameters(lam1, lam2, mu1, mu2)
 builder = builder.Builder(parameters)

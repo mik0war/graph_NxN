@@ -66,12 +66,12 @@ class Equation:
         for value in self.__coefficients[state]:
             coefficient_latex += rf' + {value.get_latex_value()}'
         coefficient_latex = coefficient_latex[2:]
-        equal += rf'-({coefficient_latex}) \frac{{d{state.map_to_latex()} (t)}}{{dt}}'
+        equal += rf'-({coefficient_latex}) {state.map_to_latex()}(t)'
 
         for coefficient_state in self.__coefficients:
             if coefficient_state != state:
                 for value in self.__coefficients[coefficient_state]:
-                    equal += rf' + {value.get_latex_value()} \frac{{d{coefficient_state.map_to_latex()} (t)}}{{dt}}'
+                    equal += rf' + {value.get_latex_value()} {coefficient_state.map_to_latex()} (t)'
         return equal
 
 
