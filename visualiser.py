@@ -11,9 +11,9 @@ class Visualiser:
         })
 
     @staticmethod
-    def visualise_multiple_graphs(leg, t_values, p_i, x_label='Time (t)', y_label='Probability',
-                                  title='Probability of SMO'):
-        plt.figure(figsize=(10, 6))
+    def visualise_multiple_graphs(leg, t_values, p_i, title, x_label='Time (t)', y_label='Probability',
+                                  ):
+        plt.figure(title, figsize=(10, 6))
         for i in range(leg.__len__()):
             plt.plot(t_values, p_i[:, i], label=leg[i])
 
@@ -24,9 +24,8 @@ class Visualiser:
         plt.legend()
 
     @staticmethod
-    def visualise_single_graph(leg, t_values, p_i, x_label='Time (t)', y_label='Probability',
-                                  title='Probability of loss'):
-        plt.figure(figsize=(14, 8))
+    def visualise_single_graph(leg, t_values, p_i,title, x_label='Time (t)', y_label='Probability'):
+        plt.figure(title, figsize=(14, 8))
         plt.plot(t_values, p_i, label=leg)
 
         plt.xlabel(x_label)

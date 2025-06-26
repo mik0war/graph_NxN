@@ -4,7 +4,6 @@ from numpy import ndarray
 from data_types.equations_type import EquationSystem, MatrixElement
 from data_types.labels import *
 from data_types.state import State, Edge
-from visualiser import Visualiser
 
 
 class Parameters:
@@ -139,7 +138,7 @@ class Builder:
                 pos[f'{i}{j}'] = (j, self.__buffer_size - i)
         return pos
 
-    def build_matrix_latex(self):
+    def build_matrix_latex(self) -> str:
         if not self.__matrix:
             return r""
 
@@ -153,5 +152,29 @@ class Builder:
         latex_body = " \\\\ ".join(latex_rows)
         return rf"$\left[\begin{{array}}{{{cols}}} {latex_body} \end{{array}}\right]$"
 
-    def build_latex_evaluation_system(self, ):
+    def build_latex_evaluation_system(self) -> str:
         return self.__kolm_system.map_to_latex()
+
+    def build_average_count(self, p_values: ndarray) -> tuple[ndarray, ndarray]:
+        count_positive = [
+            p_values[:, self.__states[state].get_numeric_index()] * self.__states[state].get_positive_index()
+            for state in self.__states
+            if isinstance(state, int)
+        ]
+
+        count_negative = [
+            p_values[:, self.__states[state].get_numeric_index()] * self.__states[state].get_negative_index()
+            for state in self.__states
+            if isinstance(state, int)
+        ]
+
+        return np.sum(count_positive, axis=0), np.sum(count_negative, axis=0)
+
+    def build_positive_throughput(self, p_values: ndarray):
+
+        counts = self.build_average_count(p_values)
+
+        return counts[0] / self.__parameters.mu_one.get_value()
+
+
+

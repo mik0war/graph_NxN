@@ -7,20 +7,20 @@ from visualiser import Visualiser
 
 class Calculator:
 
-    def __init__(self, builder : Builder):
+    def __init__(self, builder: Builder):
         self.__builder = builder
 
-        #Calculation results
+        # Calculation results
         self.__g_values = None
         self.__p_i = None
         self.__t_values = None
 
-        #Time params
+        # Time params
         self.__start = 0
         self.__end = 0.025
         self.__num = 2000
 
-        #Decorators
+        # Decorators
         self.visualise = self.check_calculate(self.visualise)
         self.visualise_throughput = self.check_calculate(self.visualise_throughput)
 
@@ -29,7 +29,7 @@ class Calculator:
         self.__start = start
         self.__end = end
 
-    def calculate(self, matrix, p = None):
+    def calculate(self, matrix, p=None):
         matrix_size = matrix.__len__()
 
         # Начальное распределение вероятностей
@@ -63,7 +63,6 @@ class Calculator:
 
     def check_calculate(self, func):
         def wrapper(*args, **kwargs):
-
             if self.__p_i is None:
                 raise ValueError('Must call calculate() method before')
 
@@ -72,24 +71,37 @@ class Calculator:
 
         return wrapper
 
-    def visualise(self, visualiser : Visualiser):
+    def visualise(self, visualiser: Visualiser):
         leg = self.__builder.build_probabilities_legend()
 
-        visualiser.visualise_multiple_graphs(leg, self.__t_values, self.__p_i)
-
+        visualiser.visualise_multiple_graphs(leg, self.__t_values, self.__p_i, 'Probability of SMO')
 
     def visualise_throughput(self, visualiser: Visualiser):
         a_values = self.__builder.build_throughput_values(self.__p_i)
 
         p_i_array = np.column_stack(list(a_values.values()))
-        visualiser.visualise_multiple_graphs(['$A_1(t)$', '$A_2(t)$'], self.__t_values, p_i_array)
+        visualiser.visualise_multiple_graphs(['$A_1(t)$', '$A_2(t)$'], self.__t_values, p_i_array, 'Throughput')
 
     def visualise_loss(self, visualiser: Visualiser):
         lose_probabilities = self.__builder.build_lose_probability(self.__p_i)
-        visualiser.visualise_single_graph('A(t)', self.__t_values, lose_probabilities)
+        visualiser.visualise_single_graph('A(t)', self.__t_values, lose_probabilities, 'Loss')
 
     def visualise_r(self, visualiser: Visualiser):
         a_values = self.__builder.build_throughput_values(self.__p_i)
 
         r = (a_values['$A_1(t)$'] - a_values['$A_2(t)$']) / a_values['$A_1(t)$']
-        visualiser.visualise_single_graph('R(t)', self.__t_values, r)
+        visualiser.visualise_single_graph('R(t)', self.__t_values, r, 'R(t)')
+
+    def calculate_average_count(self, visualiser: Visualiser):
+        count = self.__builder.build_average_count(self.__p_i)
+
+        counts = np.column_stack(count)
+        visualiser.visualise_multiple_graphs([
+            'Count positive packets', 'Count negative packets'
+        ], self.__t_values, counts, title='Count of packets')
+
+    def visualise_positive_throughput(self, visualiser: Visualiser):
+        throughput = self.__builder.build_positive_throughput(self.__p_i)
+        np.column_stack(list(throughput))
+
+        visualiser.visualise_single_graph('A(t)', self.__t_values, throughput, title='Positive throughput')

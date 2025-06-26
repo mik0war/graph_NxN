@@ -22,6 +22,12 @@ class State:
     def map_to_latex(self):
         return rf'p_{{{self.__label}}}'
 
+    def get_positive_index(self):
+        return self.__positive_index
+
+    def get_negative_index(self):
+        return self.__negative_index
+
 
 class Edge:
     def __init__(self, node_from: State, node_to: State, label: Label):

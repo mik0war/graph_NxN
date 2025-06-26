@@ -41,6 +41,8 @@ calculator.visualise(visualiser)
 calculator.visualise_throughput(visualiser)
 calculator.visualise_loss(visualiser)
 calculator.visualise_r(visualiser)
+calculator.calculate_average_count(visualiser)
+calculator.visualise_positive_throughput(visualiser)
 
 visualiser.visualise_graph(builder)
 matrix_latex = builder.build_matrix_latex()
