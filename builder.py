@@ -94,7 +94,7 @@ class Builder:
 
         return matrix
 
-    def visualise_probabilities(self, visualiser: Visualiser, t_values: ndarray, p_values: ndarray):
+    def build_probabilities_legend(self):
 
         leg = []
         for state in self.__states:
@@ -102,18 +102,29 @@ class Builder:
                 leg.append(rf'${self.__states[state].map_to_latex()}$')
         leg.append('1')
 
-        visualiser.visualise_probability(leg, t_values, p_values)
+        return leg
 
-    def visualise_loss(self, visualiser: Visualiser, t_values: ndarray, p_values: ndarray):
-        throughput_columns = [
+    def build_lose_probability(self, p_values: ndarray):
+        lose_probabilities = [
             p_values[:, self.__states[state].get_numeric_index()]
             for state in self.__states
             if isinstance(state, int) and self.__states[state].get_state_sum() == self.__buffer_size
         ]
 
-        throughput_values = np.sum(throughput_columns, axis=0)
-        visualiser.visualise_loss('A(t)', t_values, throughput_values)
+        return np.sum(lose_probabilities, axis=0)
 
+    def build_throughput_values(self, p_values: ndarray):
+        throughput_values: ndarray = self.build_lose_probability(p_values)
+
+        lam_one = self.__parameters.lam_one.get_value()
+        lam_two = self.__parameters.lam_two.get_value()
+
+        a_values = {
+            '$A_1(t)$': lam_one * (1 - throughput_values),
+            '$A_2(t)$': lam_two * (1 - throughput_values)
+        }
+
+        return a_values
 
     def build_graph_positions(self, g) -> dict[str, tuple[int, int]]:
         for edge in self.__edges:

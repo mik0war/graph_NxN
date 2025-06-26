@@ -11,25 +11,27 @@ class Visualiser:
         })
 
     @staticmethod
-    def visualise_probability(leg, t_values, p_i):
+    def visualise_multiple_graphs(leg, t_values, p_i, x_label='Time (t)', y_label='Probability',
+                                  title='Probability of SMO'):
         plt.figure(figsize=(10, 6))
         for i in range(leg.__len__()):
             plt.plot(t_values, p_i[:, i], label=leg[i])
 
-        plt.xlabel('Time (t)')
-        plt.ylabel('Probability')
-        plt.title('Probability of SMO')
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(title)
         plt.grid(True)
         plt.legend()
 
     @staticmethod
-    def visualise_loss(leg, t_values, p_i):
+    def visualise_single_graph(leg, t_values, p_i, x_label='Time (t)', y_label='Probability',
+                                  title='Probability of loss'):
         plt.figure(figsize=(14, 8))
         plt.plot(t_values, p_i, label=leg)
 
-        plt.xlabel('Time (t)')
-        plt.ylabel('Probability')
-        plt.title('Probability of loss')
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.title(title)
         plt.grid(True)
         plt.legend()
 
@@ -59,9 +61,9 @@ class Visualiser:
         edge_labels = nx.get_edge_attributes(g, 'label')
 
         nx.draw_networkx_edge_labels(g, pos, edge_labels=edge_labels,
-                                     label_pos=0.3, font_size=7, connectionstyle='arc3,rad=0.2')
+                                     label_pos=0.3, font_size=14, connectionstyle='arc3,rad=0.2')
 
-        nx.draw_networkx_labels(g, pos, font_size=12, font_weight='bold', ax=ax)
+        nx.draw_networkx_labels(g, pos, font_size=14, font_weight='bold', ax=ax)
 
         plt.axis('off')
         plt.tight_layout()

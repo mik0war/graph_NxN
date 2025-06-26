@@ -73,9 +73,23 @@ class Calculator:
         return wrapper
 
     def visualise(self, visualiser : Visualiser):
-        self.__builder.visualise_probabilities(visualiser, self.__t_values, self.__p_i)
+        leg = self.__builder.build_probabilities_legend()
+
+        visualiser.visualise_multiple_graphs(leg, self.__t_values, self.__p_i)
 
 
     def visualise_throughput(self, visualiser: Visualiser):
-        self.__builder.visualise_loss(visualiser, self.__t_values, self.__p_i)
+        a_values = self.__builder.build_throughput_values(self.__p_i)
 
+        p_i_array = np.column_stack(list(a_values.values()))
+        visualiser.visualise_multiple_graphs(['$A_1(t)$', '$A_2(t)$'], self.__t_values, p_i_array)
+
+    def visualise_loss(self, visualiser: Visualiser):
+        lose_probabilities = self.__builder.build_lose_probability(self.__p_i)
+        visualiser.visualise_single_graph('A(t)', self.__t_values, lose_probabilities)
+
+    def visualise_r(self, visualiser: Visualiser):
+        a_values = self.__builder.build_throughput_values(self.__p_i)
+
+        r = (a_values['$A_1(t)$'] - a_values['$A_2(t)$']) / a_values['$A_1(t)$']
+        visualiser.visualise_single_graph('R(t)', self.__t_values, r)

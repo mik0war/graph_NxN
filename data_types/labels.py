@@ -18,6 +18,9 @@ class Label(ABC):
     def get_color(self):
         return self._get_color()
 
+    def get_value(self):
+        return self.__value
+
     @abstractmethod
     def _get_unicode_label(self):
         pass
