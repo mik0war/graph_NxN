@@ -17,10 +17,10 @@ def calculate_time(g_values: list):
 #    print(5 * 1/g)
 
 # Параметры системы
-lam1 = 6000
-lam2 = 9000
-mu1 = 200
-mu2 = 700
+lam1 = 750
+lam2 = 500
+mu1 = 960
+mu2 = 530
 
 BUFFER_SIZE = 3
 
@@ -38,6 +38,7 @@ mm = np.array(matrix_coefficients)
 
 calculator.calculate(mm)
 calculator.visualise(visualiser)
+calculator.visualise_throughput(visualiser)
 
 visualiser.visualise_graph(builder)
 matrix_latex = builder.build_matrix_latex()

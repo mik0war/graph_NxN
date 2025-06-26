@@ -1,3 +1,4 @@
+import numpy as np
 from numpy import ndarray
 
 from data_types.equations_type import EquationSystem, MatrixElement
@@ -32,7 +33,7 @@ class Builder:
                 if i + j > buffer_size:
                     continue
 
-                states[index] = State(index, f'{i}{j}')
+                states[index] = State(index, i, j)
                 states[f'{i}{j}'] = states[index]
                 index += 1
 
@@ -102,6 +103,17 @@ class Builder:
         leg.append('1')
 
         visualiser.visualise_probability(leg, t_values, p_values)
+
+    def visualise_loss(self, visualiser: Visualiser, t_values: ndarray, p_values: ndarray):
+        throughput_columns = [
+            p_values[:, self.__states[state].get_numeric_index()]
+            for state in self.__states
+            if isinstance(state, int) and self.__states[state].get_state_sum() == self.__buffer_size
+        ]
+
+        throughput_values = np.sum(throughput_columns, axis=0)
+        visualiser.visualise_loss('A(t)', t_values, throughput_values)
+
 
     def build_graph_positions(self, g) -> dict[str, tuple[int, int]]:
         for edge in self.__edges:

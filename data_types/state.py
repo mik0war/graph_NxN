@@ -4,15 +4,20 @@ from data_types.labels import Label
 
 
 class State:
-    def __init__(self, index: int, label: str):
-        self.__index = index
-        self.__label = label
+    def __init__(self, array_index: int, positive_index: int, negative_index: int):
+        self.__index = array_index
+        self.__label = f'{positive_index}{negative_index}'
+        self.__positive_index = positive_index
+        self.__negative_index = negative_index
 
     def get_numeric_index(self) -> int:
         return self.__index
 
     def get_string_index(self) -> str:
         return self.__label
+
+    def get_state_sum(self) -> int:
+        return self.__negative_index + self.__positive_index
 
     def map_to_latex(self):
         return rf'p_{{{self.__label}}}'

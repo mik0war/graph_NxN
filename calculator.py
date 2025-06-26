@@ -17,8 +17,12 @@ class Calculator:
 
         #Time params
         self.__start = 0
-        self.__end = 0.01
-        self.__num = 1000
+        self.__end = 0.025
+        self.__num = 2000
+
+        #Decorators
+        self.visualise = self.check_calculate(self.visualise)
+        self.visualise_throughput = self.check_calculate(self.visualise_throughput)
 
     def set_time_params(self, start, end, num):
         self.__num = num
@@ -46,7 +50,7 @@ class Calculator:
             return m
 
         ### Вычисление вероятностей P_i(t)
-        self.__t_values = np.linspace(0, 0.01, 1000)  # Временной интервал
+        self.__t_values = np.linspace(self.__start, self.__end, self.__num)  # Временной интервал
         p_i = np.zeros((len(self.__t_values), matrix_size + 1))  # +1 для суммы вероятностей
 
         for idx, t in enumerate(self.__t_values):
@@ -57,8 +61,21 @@ class Calculator:
 
         self.__p_i = p_i
 
-    def visualise(self, visualiser : Visualiser):
-        if self.__p_i is None:
-            raise ValueError('Must call calculate() method before')
+    def check_calculate(self, func):
+        def wrapper(*args, **kwargs):
 
+            if self.__p_i is None:
+                raise ValueError('Must call calculate() method before')
+
+            result = func(*args, **kwargs)
+            return result
+
+        return wrapper
+
+    def visualise(self, visualiser : Visualiser):
         self.__builder.visualise_probabilities(visualiser, self.__t_values, self.__p_i)
+
+
+    def visualise_throughput(self, visualiser: Visualiser):
+        self.__builder.visualise_loss(visualiser, self.__t_values, self.__p_i)
+

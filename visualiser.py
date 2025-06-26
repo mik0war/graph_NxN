@@ -23,6 +23,17 @@ class Visualiser:
         plt.legend()
 
     @staticmethod
+    def visualise_loss(leg, t_values, p_i):
+        plt.figure(figsize=(14, 8))
+        plt.plot(t_values, p_i, label=leg)
+
+        plt.xlabel('Time (t)')
+        plt.ylabel('Probability')
+        plt.title('Probability of loss')
+        plt.grid(True)
+        plt.legend()
+
+    @staticmethod
     def visualise_graph(builder):
         g = nx.DiGraph()
 
