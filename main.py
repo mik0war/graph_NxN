@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import builder
+from builder import Builder, Parameters
+import buffer
 from calculator import Calculator
 from visualiser import Visualiser
 
@@ -24,9 +25,11 @@ mu2 = 530
 
 BUFFER_SIZE = 3
 
-parameters = builder.Parameters(lam1, lam2, mu1, mu2)
-builder = builder.Builder(parameters)
-calculator = Calculator(builder)
+parameters = Parameters(lam1, lam2, mu1, mu2)
+builder = Builder(parameters)
+buffer = buffer.Buffer()
+
+calculator = Calculator(builder, buffer)
 visualiser = Visualiser()
 
 matrix_coefficients = builder.build_matrix(BUFFER_SIZE)
@@ -44,11 +47,26 @@ calculator.visualise_r(visualiser)
 calculator.calculate_average_count(visualiser)
 calculator.visualise_positive_throughput(visualiser)
 
-visualiser.visualise_graph(builder)
-matrix_latex = builder.build_matrix_latex()
-visualiser.display_latex_text(matrix_latex)
+calculator.save_throughput('-', 'first')
+calculator.visualise_throughput(visualiser)
+parameters = Parameters(lam1, lam2, mu1, 1600)
 
-equation_system = builder.build_latex_evaluation_system()
-visualiser.display_latex_text(equation_system)
+builder.change_params(parameters)
+
+print(matrix_coefficients)
+
+matrix_coefficients = builder.build_matrix(BUFFER_SIZE)
+
+print(matrix_coefficients)
+mm = np.array(matrix_coefficients)
+calculator.calculate(mm)
+calculator.save_throughput('-.', 'second')
+buffer.visualise_buffer(visualiser)
+#visualiser.visualise_graph(builder)
+#matrix_latex = builder.build_matrix_latex()
+#visualiser.display_latex_text(matrix_latex)
+
+#equation_system = builder.build_latex_evaluation_system()
+#visualiser.display_latex_text(equation_system)
 
 plt.show()

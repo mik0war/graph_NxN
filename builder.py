@@ -23,8 +23,10 @@ class Builder:
         self.__matrix: list[list[MatrixElement]] | None = None
         self.__buffer_size: int = 0
 
-    def build_states(self, buffer_size: int):
+    def change_params(self, params: Parameters):
+        self.__parameters = params
 
+    def build_states(self, buffer_size: int):
         states = {}
         index = 0
         for i in range(buffer_size + 1):
@@ -40,8 +42,7 @@ class Builder:
         return self.__states
 
     def build_edges(self, buffer_size: int):
-        if not self.__states:
-            self.build_states(buffer_size)
+        self.build_states(buffer_size)
 
         edges_with_labels = []
 
@@ -69,8 +70,7 @@ class Builder:
         return edges_with_labels
 
     def build_equation_system(self, buffer_size: int):
-        if not self.__edges:
-            self.build_edges(buffer_size)
+        self.build_edges(buffer_size)
 
         self.__kolm_system = EquationSystem(buffer_size, self.__states)
         self.__kolm_system.fill_equations(self.__edges)
@@ -78,8 +78,7 @@ class Builder:
         return self.__kolm_system
 
     def build_matrix(self, buffer_size: int):
-        if not self.__kolm_system:
-            self.build_equation_system(buffer_size)
+        self.build_equation_system(buffer_size)
 
         self.__matrix = self.__kolm_system.map_to_matrix()
         self.__buffer_size = buffer_size

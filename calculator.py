@@ -1,14 +1,16 @@
 import numpy as np
 from scipy.linalg import eig
 
+from buffer import Buffer
 from builder import Builder
 from visualiser import Visualiser
 
 
 class Calculator:
 
-    def __init__(self, builder: Builder):
+    def __init__(self, builder: Builder, buffer: Buffer):
         self.__builder = builder
+        self.__buffer = buffer
 
         # Calculation results
         self.__g_values = None
@@ -70,6 +72,15 @@ class Calculator:
             return result
 
         return wrapper
+
+    def save_throughput(self, style, suffix):
+        a_values = self.__builder.build_throughput_values(self.__p_i)
+
+        self.__buffer.add_to_buffer(a_values['$A_1(t)$'], style, rf'$A_1(t)_{{{suffix}}}$')
+        self.__buffer.add_to_buffer(a_values['$A_2(t)$'], style, rf'$A_2(t)_{{{suffix}}}$')
+        self.__buffer.set_t(self.__t_values)
+
+
 
     def visualise(self, visualiser: Visualiser):
         leg = self.__builder.build_probabilities_legend()
