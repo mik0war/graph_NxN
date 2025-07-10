@@ -19,7 +19,7 @@ class Calculator:
 
         # Time params
         self.__start = 0
-        self.__end = 0.025
+        self.__end = 0.1
         self.__num = 2000
 
         # Decorators
@@ -58,6 +58,7 @@ class Calculator:
         for idx, t in enumerate(self.__t_values):
             m_t = compute_m(t)
             p_i_t = m_t @ p  # Умножение матрицы на вектор начальных условий
+            p_i_t = np.where(p_i_t < 0, 0, p_i_t)
             p_i[idx, :matrix_size] = p_i_t
             p_i[idx, matrix_size] = np.sum(p_i_t)  # Сумма вероятностей (должна быть 1)
 

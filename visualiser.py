@@ -35,7 +35,6 @@ class Visualiser:
 
     @staticmethod
     def visualise_multiple_graphs_styled(leg, styles, t_values, p_i, title, x_label='Time (t)', y_label='Probability'):
-        # В Plotly стили линий задаются по-другому, преобразуем matplotlib styles в plotly
         line_styles = {
             '-': 'solid',
             '--': 'dash',
@@ -86,77 +85,36 @@ class Visualiser:
     @staticmethod
     def visualise_graph(builder):
         g = nx.DiGraph()
+
         pos = builder.build_graph_positions(g)
 
-        edge_x = []
-        edge_y = []
-        edge_colors = []
-        edge_labels = []
-        for u, v in g.edges():
-            x0, y0 = pos[u]
-            x1, y1 = pos[v]
-            edge_x.extend([x0, x1, None])
-            edge_y.extend([y0, y1, None])
-            edge_colors.append(g[u][v]['color'])
-            edge_labels.append(g[u][v]['label'])
+        fig, ax = plt.subplots(figsize=(12, 6))
 
-        edge_trace = go.Scatter(
-            x=edge_x, y=edge_y,
-            line=dict(width=2, color='gray'),
-            hoverinfo='none',
-            mode='lines')
+        # Рисуем узлы
+        nx.draw_networkx_nodes(g, pos, node_size=1000,
+                               node_color='lightblue', edgecolors='black', ax=ax)
 
-        node_x = []
-        node_y = []
-        node_text = []
-        for node in g.nodes():
-            x, y = pos[node]
-            node_x.append(x)
-            node_y.append(y)
-            node_text.append(node)
-
-        node_trace = go.Scatter(
-            x=node_x, y=node_y,
-            mode='markers+text',
-            text=node_text,
-            textposition="middle center",
-            hoverinfo='text',
-            marker=dict(
-                showscale=False,
-                colorscale='Blues',
-                size=20,
-                color='lightblue',
-                line=dict(width=2, color='black'))
+        # Рисуем все рёбра сначала
+        nx.draw_networkx_edges(
+            g, pos,
+            edge_color=[g[u][v]['color'] for u, v in g.edges()],
+            arrowsize=20,
+            width=2,
+            arrowstyle='->',
+            connectionstyle='arc3,rad=0.2',
+            ax=ax
         )
 
-        fig = go.Figure(data=[edge_trace, node_trace],
-                        layout=go.Layout(
-                            title='Graph Visualization',
-                            showlegend=False,
-                            hovermode='closest',
-                            margin=dict(b=20, l=5, r=5, t=40),
-                            xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                            yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-                        )
+        edge_labels = nx.get_edge_attributes(g, 'label')
 
-        # Добавляем подписи к ребрам
-        middle_node_trace = go.Scatter(
-            x=[], y=[],
-            text=[],
-            mode='text',
-            hoverinfo='none',
-            textfont=dict(size=14)
-        )
+        nx.draw_networkx_edge_labels(g, pos, edge_labels=edge_labels,
+                                     label_pos=0.3, font_size=14, connectionstyle='arc3,rad=0.2')
 
-        for edge in g.edges():
-            x0, y0 = pos[edge[0]]
-            x1, y1 = pos[edge[1]]
-            middle_node_trace['x'] += tuple([(x0 + x1) / 2])
-            middle_node_trace['y'] += tuple([(y0 + y1) / 2])
-            middle_node_trace['text'] += tuple([g.edges[edge]['label']])
+        nx.draw_networkx_labels(g, pos, font_size=14, font_weight='bold', ax=ax)
 
-        fig.add_trace(middle_node_trace)
-        fig.show()
+        plt.axis('off')
+        plt.tight_layout()
+
 
     @staticmethod
     def display_latex_text(latex_code, font_size=8):
