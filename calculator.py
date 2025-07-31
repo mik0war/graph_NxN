@@ -44,7 +44,7 @@ class Calculator:
         ### Вычисление коэффициентов A (через обратную матрицу)
         a = np.linalg.inv(xsi)
 
-        ### Вычисление матрицы переходов M(t)
+        ### Вычисление матрицы преобразования
         def compute_m(time):
             m = np.zeros((matrix_size, matrix_size))
             for k in range(matrix_size):

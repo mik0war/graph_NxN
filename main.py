@@ -53,20 +53,17 @@ parameters = Parameters(lam1, lam2, mu1, 1600)
 
 builder.change_params(parameters)
 
-print(matrix_coefficients)
-
 matrix_coefficients = builder.build_matrix(BUFFER_SIZE)
 
-print(matrix_coefficients)
 mm = np.array(matrix_coefficients)
 calculator.calculate(mm)
 calculator.save_throughput('-.', 'second')
-buffer.visualise_buffer(visualiser)
-#visualiser.visualise_graph(builder)
-#matrix_latex = builder.build_matrix_latex()
-#visualiser.display_latex_text(matrix_latex)
+#buffer.visualise_buffer(visualiser)
+visualiser.visualise_graph(builder)
+matrix_latex = builder.build_matrix_latex()
+visualiser.display_latex_text(matrix_latex)
 
-#equation_system = builder.build_latex_evaluation_system()
-#visualiser.display_latex_text(equation_system)
+equation_system = builder.build_latex_evaluation_system()
+visualiser.display_latex_text(equation_system)
 
 plt.show()
