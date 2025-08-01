@@ -2,17 +2,8 @@ import numpy as np
 from numpy import ndarray
 
 from data_types.equations_type import EquationSystem, MatrixElement
-from data_types.labels import *
+from data_types.parameters import Parameters
 from data_types.state import State, Edge
-
-
-class Parameters:
-    def __init__(self, lam1: int, lam2: int, mu1: int, mu2: int):
-        self.lam_one = LambdaOne(lam1)
-        self.lam_two = LambdaTwo(lam2)
-        self.mu_one = MuOne(mu1)
-        self.mu_two = MuTwo(mu2)
-
 
 class Builder:
     def __init__(self, parameters: Parameters):
@@ -22,9 +13,6 @@ class Builder:
         self.__kolm_system: EquationSystem | None = None
         self.__matrix: list[list[MatrixElement]] | None = None
         self.__buffer_size: int = 0
-
-    def change_params(self, params: Parameters):
-        self.__parameters = params
 
     def build_states(self, buffer_size: int):
         states = {}
@@ -77,11 +65,13 @@ class Builder:
 
         return self.__kolm_system
 
-    def build_matrix(self, buffer_size: int):
-        self.build_equation_system(buffer_size)
+    def build_matrix(self, buffer_size: int, is_reload: bool = True):
 
-        self.__matrix = self.__kolm_system.map_to_matrix()
-        self.__buffer_size = buffer_size
+        if is_reload:
+            self.build_equation_system(buffer_size)
+
+            self.__matrix = self.__kolm_system.map_to_matrix()
+            self.__buffer_size = buffer_size
 
         matrix = [[0 for _ in range(self.__matrix.__len__())]
                   for _ in range(self.__matrix.__len__())]

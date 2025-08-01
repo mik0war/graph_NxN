@@ -6,6 +6,9 @@ class Label(ABC):
     def __init__(self, value : int):
         self.__value = value
 
+    def change_value(self, value):
+        self.__value = value
+
     def add_value(self, value_sum : int):
         return self.__value + value_sum
 

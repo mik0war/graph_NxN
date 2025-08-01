@@ -16,10 +16,12 @@ class Calculator:
         self.__g_values = None
         self.__p_i = None
         self.__t_values = None
+        self.__a = None
+        self.__xsi = None
 
         # Time params
-        self.__start = 0
-        self.__end = 0.1
+        self.start = 0
+        self.end = 0.1
         self.__num = 2000
 
         # Decorators
@@ -28,41 +30,63 @@ class Calculator:
 
     def set_time_params(self, start, end, num):
         self.__num = num
-        self.__start = start
-        self.__end = end
+        self.start = start
+        self.end = end
 
-    def calculate(self, matrix, p=None):
+    def calculate(self, matrix, time_start=None, time_end=None, num=None, p=None):
         matrix_size = matrix.__len__()
 
-        # Начальное распределение вероятностей
-        if not p:
-            p = np.array([0 for _ in range(matrix_size)])
-            p[0] = 1
+        if time_start:
+            self.start = time_start
+        if time_end:
+            self.end = time_end
+        if num:
+            self.__num = num
 
-        ### Вычисление собственных значений и векторов
-        self.__g_values, xsi = eig(matrix)  # XSI - матрица правых собственных векторов
-        ### Вычисление коэффициентов A (через обратную матрицу)
-        a = np.linalg.inv(xsi)
+        p = self.calculate_initial_p(matrix_size, p)
 
-        ### Вычисление матрицы преобразования
-        def compute_m(time):
-            m = np.zeros((matrix_size, matrix_size))
-            for k in range(matrix_size):
-                m += np.real(np.outer(xsi[:, k], a[k, :]) * np.exp(self.__g_values[k] * time))
-            return m
+        self.calculate_g_a(matrix)
 
         ### Вычисление вероятностей P_i(t)
-        self.__t_values = np.linspace(self.__start, self.__end, self.__num)  # Временной интервал
-        p_i = np.zeros((len(self.__t_values), matrix_size + 1))  # +1 для суммы вероятностей
+        t_values = np.linspace(self.start, self.end, self.__num)  # Временной интервал
+        p_i = np.zeros((len(t_values), matrix_size + 1))  # +1 для суммы вероятностей
 
-        for idx, t in enumerate(self.__t_values):
-            m_t = compute_m(t)
+        for idx, t in enumerate(t_values):
+            m_t = self.compute_m(matrix_size, t - self.start)
             p_i_t = m_t @ p  # Умножение матрицы на вектор начальных условий
             p_i_t = np.where(p_i_t < 0, 0, p_i_t)
             p_i[idx, :matrix_size] = p_i_t
             p_i[idx, matrix_size] = np.sum(p_i_t)  # Сумма вероятностей (должна быть 1)
 
+        if self.__t_values is not None:
+            self.__t_values = np.concatenate((self.__t_values, t_values))
+        else:
+            self.__t_values = t_values
         self.__p_i = p_i
+
+        return p_i
+
+    def set_p(self, p_i):
+        self.__p_i = p_i
+
+    def calculate_initial_p(self, matrix_size, p=None):
+        # Начальное распределение вероятностей
+        if p is None:
+            p = np.array([0 for _ in range(matrix_size)])
+            p[0] = 1
+        return p
+
+    def calculate_g_a(self, matrix):
+        ### Вычисление собственных значений и векторов
+        self.__g_values, self.__xsi = eig(matrix)  # XSI - матрица правых собственных векторов
+        ### Вычисление коэффициентов A (через обратную матрицу)
+        self.__a = np.linalg.inv(self.__xsi)
+
+    def compute_m(self, matrix_size, time):
+        m = np.zeros((matrix_size, matrix_size))
+        for k in range(matrix_size):
+            m += np.real(np.outer(self.__xsi[:, k], self.__a[k, :]) * np.exp(self.__g_values[k] * time))
+        return m
 
     def check_calculate(self, func):
         def wrapper(*args, **kwargs):
