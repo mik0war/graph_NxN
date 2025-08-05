@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import trapezoid
 
 from builder import Builder, Parameters
 import buffer
@@ -25,9 +26,9 @@ mu1 = 960
 mu2 = 530
 
 parameters_list = [
-    Interval(0.01, 0.03, Parameters(750, 1500, 960, 530)),
-    Interval(0.03, 0.05, Parameters(750, 25000, 960, 530)),
-    Interval(0.05, 0.1, Parameters(750, 500, 960, 530)),
+    Interval(0.3, 0.4, Parameters(750, 700, 960, 530)),
+    Interval(0.4, 0.6, Parameters(750, 1000, 960, 530)),
+    Interval(0.6, 1, Parameters(750, 500, 960, 530)),
 ]
 
 BUFFER_SIZE = 5
@@ -42,17 +43,18 @@ visualiser = Visualiser()
 matrix_coefficients = builder.build_matrix(BUFFER_SIZE)
 MATRIX_SIZE = matrix_coefficients.__len__()
 
-p_i = calculator.calculate(matrix_coefficients, 0.0, 0.01, 2000)
+p_i = calculator.calculate(matrix_coefficients, 0.0, 0.3, 2000)
 for interval in parameters_list:
     parameters.change_value(interval.parameters)
     matrix = builder.build_matrix(BUFFER_SIZE, False)
+
     init_p = p_i[-1, :MATRIX_SIZE]
     p_new = calculator.calculate(matrix, interval.time_start, interval.time_end, 2000, init_p)
     p_i = np.vstack((p_i, p_new))
 
 calculator.set_p(p_i)
 calculator.start = 0.0
-calculator.end = 0.2
+calculator.end = 1
 
 calculator.visualise(visualiser)
 
@@ -65,7 +67,12 @@ calculator.visualise(visualiser)
 
 # calculator.calculate(mm)
 # calculator.visualise(visualiser)
-# calculator.visualise_throughput(visualiser)
+calculator.visualise_throughput(visualiser)
+
+a = builder.build_throughput_values(p_i)['$A_1(t)$']
+
+integral_value = trapezoid(a, calculator.t_values_public)
+print(f"Приближенное значение интеграла: {integral_value}")
 # calculator.visualise_loss(visualiser)
 # calculator.visualise_r(visualiser)
 # calculator.calculate_average_count(visualiser)

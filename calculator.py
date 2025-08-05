@@ -16,6 +16,7 @@ class Calculator:
         self.__g_values = None
         self.__p_i = None
         self.__t_values = None
+        self.t_values_public = self.__t_values
         self.__a = None
         self.__xsi = None
 
