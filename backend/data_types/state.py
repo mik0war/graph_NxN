@@ -1,6 +1,6 @@
 from networkx.classes import DiGraph
 
-from data_types.labels import Label
+from backend.data_types.labels import Label
 
 
 class State:

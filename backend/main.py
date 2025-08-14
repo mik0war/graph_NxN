@@ -5,7 +5,7 @@ from scipy.integrate import trapezoid
 from builder import Builder, Parameters
 import buffer
 from calculator import Calculator
-from data_types.parameters import Interval
+from backend.data_types.parameters import Interval
 from visualiser import Visualiser
 
 

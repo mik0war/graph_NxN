@@ -1,9 +1,9 @@
 import numpy as np
 from numpy import ndarray
 
-from data_types.equations_type import EquationSystem, MatrixElement
-from data_types.parameters import Parameters
-from data_types.state import State, Edge
+from backend.data_types.equations_type import EquationSystem, MatrixElement
+from backend.data_types.parameters import Parameters
+from backend.data_types.state import State, Edge
 
 class Builder:
     def __init__(self, parameters: Parameters):

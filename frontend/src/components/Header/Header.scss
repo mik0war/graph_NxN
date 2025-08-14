@@ -1,0 +1,28 @@
+.app-header {
+  background-color: #f8f9fa;
+  padding: 1rem;
+
+  .nav-list {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    a {
+      text-decoration: none;
+      color: #333;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+
+      &:hover {
+        background-color: #e9ecef;
+      }
+
+      &.active {
+        background-color: #007bff;
+        color: white;
+      }
+    }
+  }
+}

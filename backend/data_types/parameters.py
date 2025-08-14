@@ -1,4 +1,4 @@
-from data_types.labels import LambdaOne, LambdaTwo, MuOne, MuTwo
+from backend.data_types.labels import LambdaOne, LambdaTwo, MuOne, MuTwo
 
 
 class Parameters:

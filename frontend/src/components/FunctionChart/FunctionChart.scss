@@ -1,0 +1,167 @@
+.function-chart-container {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  color: #333;
+
+  h1 {
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  .container {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+
+    @media (max-width: 992px) {
+      flex-direction: column;
+    }
+  }
+
+  .control-panel {
+    flex: 1;
+    min-width: 350px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+
+    h3 {
+      color: #2c3e50;
+      margin: 1.5rem 0 1rem;
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+  }
+
+  .chart-wrapper {
+    flex: 2;
+    min-height: 500px;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: #555;
+      font-size: 0.95rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.3s;
+
+      &:focus {
+        outline: none;
+        border-color: #4a6bff;
+        box-shadow: 0 0 0 2px rgba(74, 107, 255, 0.2);
+      }
+    }
+  }
+
+  button {
+    background-color: #4a6bff;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    width: 100%;
+    margin-top: 0.5rem;
+
+    &:hover {
+      background-color: #3a5bef;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  .intervals-table-container {
+    margin-top: 2rem;
+    overflow-x: auto;
+    background: #f9faff;
+    border-radius: 8px;
+    padding: 1rem;
+    border: 1px solid #e0e8ff;
+
+    h3 {
+      margin-top: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+
+      th {
+        background-color: #4a6bff;
+        color: white;
+        padding: 0.75rem;
+        text-align: left;
+      }
+
+      td {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e0e8ff;
+        background-color: white;
+      }
+
+      tr:hover td {
+        background-color: #f5f7ff;
+      }
+    }
+  }
+
+  .delete-btn {
+    background-color: #ff4a4a;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    width: auto;
+
+    &:hover {
+      background-color: #e03a3a;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .control-panel, .chart-wrapper {
+      min-width: 100%;
+    }
+
+    .chart-wrapper {
+      min-height: 400px;
+    }
+  }
+}
