@@ -1,6 +1,5 @@
 import networkx as nx
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 from matplotlib import pyplot as plt
 
 
@@ -9,11 +8,14 @@ class Visualiser:
     def __init__(self, use_latex=True):
         plt.rcParams.update({
             "text.usetex": use_latex,
-            "text.latex.preamble": r"\usepackage{amsmath}"
+            "text.latex.preamble": r"\usepackage{amsmath}",
+            "figure.facecolor": "white",
+            "axes.facecolor": "white",
+            "savefig.facecolor": "white"
         })
 
     @staticmethod
-    def visualise_multiple_graphs(leg, t_values, p_i, title, x_label='Time (t)', y_label='Probability'):
+    def visualise_multiple_graphs(leg, t_values, p_i, title, x_label='Time', y_label='Probability'):
         fig = go.Figure()
         for i in range(len(leg)):
             fig.add_trace(go.Scatter(
@@ -33,15 +35,21 @@ class Visualiser:
         )
         fig.show()
 
+
+
     @staticmethod
-    def visualise_multiple_graphs_styled(leg, styles, t_values, p_i, title, x_label='Time (t)', y_label='Probability'):
+    def visualise_multiple_graphs_styled(leg, styles, t_values, p_i, title, x_label='Time', y_label='Probability'):
         line_styles = {
             '-': 'solid',
             '--': 'dash',
             ':': 'dot',
-            '-.': 'dashdot'
+            '-.': 'dashdot',
+            (0, (5, 10)): 'longdash',
+            (0, (1, 1)): 'longdashdot',
+            (0, (3, 5, 1, 5, 1, 5)): 'solid'
         }
 
+        plt.style.use('default')
         fig = go.Figure()
         for i in range(len(leg)):
             fig.add_trace(go.Scatter(
@@ -49,7 +57,7 @@ class Visualiser:
                 y=p_i[:, i],
                 name=leg[i],
                 mode='lines',
-                line=dict(dash=line_styles.get(styles[i], 'solid')),
+                line=dict(dash=line_styles.get(styles[i], 'solid'), width=4),
                 hovertemplate=f'<b>{leg[i]}</b><br>t: %{{x}}<br>p: %{{y}}<extra></extra>'
             ))
 
@@ -57,6 +65,10 @@ class Visualiser:
             title=title,
             xaxis_title=x_label,
             yaxis_title=y_label,
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            xaxis=dict(showgrid=True, gridcolor='lightgray', zerolinecolor='lightgray'),
+            yaxis=dict(showgrid=True, gridcolor='lightgray', zerolinecolor='lightgray'),
             hovermode='x unified',
             showlegend=True
         )
@@ -78,7 +90,12 @@ class Visualiser:
             xaxis_title=x_label,
             yaxis_title=y_label,
             hovermode='x unified',
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            xaxis=dict(showgrid=True, gridcolor='lightgray', zerolinecolor='lightgray'),
+            yaxis=dict(showgrid=True, gridcolor='lightgray', zerolinecolor='lightgray'),
             showlegend=True
+
         )
         fig.show()
 
@@ -133,4 +150,5 @@ class Visualiser:
             margin=dict(l=20, r=20, t=20, b=20),
             paper_bgcolor="white"
         )
+        print(latex_code)
         fig.show()

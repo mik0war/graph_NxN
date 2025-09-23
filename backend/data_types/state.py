@@ -1,6 +1,5 @@
 from networkx.classes import DiGraph
-
-from backend.data_types.labels import Label
+from data_types.labels import Label
 
 
 class State:
@@ -11,7 +10,7 @@ class State:
         self.__negative_index = negative_index
 
     def get_numeric_index(self) -> int:
-        return self.__index
+        return self.__positive_index + self.__negative_index
 
     def get_string_index(self) -> str:
         return self.__label

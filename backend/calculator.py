@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.linalg import eig
 
+from data_types.parameters import Interval
 from buffer import Buffer
 from builder import Builder
 from visualiser import Visualiser
@@ -106,18 +107,17 @@ class Calculator:
         self.__buffer.add_to_buffer(a_values['$A_2(t)$'], style, rf'$A_2(t)_{{{suffix}}}$')
         self.__buffer.set_t(self.__t_values)
 
-
-
     def visualise(self, visualiser: Visualiser):
         leg = self.__builder.build_probabilities_legend()
 
-        visualiser.visualise_multiple_graphs(leg, self.__t_values, self.__p_i, 'Probability of SMO')
+        visualiser.visualise_multiple_graphs(leg, self.__t_values,
+                                                    self.__p_i, 'Probability of QS')
 
-    def visualise_throughput(self, visualiser: Visualiser):
-        a_values = self.__builder.build_throughput_values(self.__p_i)
+    def visualise_throughput(self, visualiser: Visualiser, intervals: list[Interval] = None):
+        a_values = self.__builder.build_throughput_values(self.__p_i, intervals, self.__t_values)
 
         p_i_array = np.column_stack(list(a_values.values()))
-        visualiser.visualise_multiple_graphs(['$A_1(t)$', '$A_2(t)$'], self.__t_values, p_i_array, 'Throughput')
+        visualiser.visualise_multiple_graphs_styled(['$A_1(t)$', '$A_2(t)$'], ['solid', '-.'], self.__t_values, p_i_array, 'Throughput')
 
     def visualise_loss(self, visualiser: Visualiser):
         lose_probabilities = self.__builder.build_lose_probability(self.__p_i)

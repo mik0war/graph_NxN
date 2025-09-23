@@ -1,5 +1,5 @@
-from backend.data_types.labels import Label
-from backend.data_types.state import Edge, State
+from data_types.labels import Label
+from data_types.state import Edge, State
 
 
 class Coefficient:
@@ -58,7 +58,8 @@ class Equation:
     def fill_matrix_line(self, matrix_line: list[MatrixElement]) -> None:
         for index in self.__coefficients.keys():
             for coefficient in self.__coefficients[index]:
-                matrix_line[index.get_numeric_index()].add_element(coefficient)
+                index1 = index.get_numeric_index()
+                matrix_line[index1].add_element(coefficient)
 
     def map_to_latex(self, state: State):
         equal = rf'\frac{{d{state.map_to_latex()} (t)}}{{dt}} &='

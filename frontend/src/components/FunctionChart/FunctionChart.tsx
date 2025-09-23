@@ -24,7 +24,7 @@ const FunctionChart: React.FC<Props> = (props) => {
 
     const config = {
         xMin: 0,
-        xMax: 1,
+        xMax: 0.02,
         points: 1000
     };
 

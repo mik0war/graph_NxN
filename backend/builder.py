@@ -1,9 +1,10 @@
 import numpy as np
 from numpy import ndarray
 
-from backend.data_types.equations_type import EquationSystem, MatrixElement
-from backend.data_types.parameters import Parameters
-from backend.data_types.state import State, Edge
+from data_types.equations_type import EquationSystem, MatrixElement
+from data_types.parameters import Parameters, Interval
+from data_types.state import State, Edge
+
 
 class Builder:
     def __init__(self, parameters: Parameters):
@@ -101,18 +102,36 @@ class Builder:
 
         return np.sum(lose_probabilities, axis=0)
 
-    def build_throughput_values(self, p_values: ndarray):
+    def build_throughput_values(self, p_values: ndarray, params: list[Interval] = None, t_values=None):
         throughput_values: ndarray = self.build_lose_probability(p_values)
 
-        lam_one = self.__parameters.lam_one.get_value()
-        lam_two = self.__parameters.lam_two.get_value()
+        if params is None:
+            lam_one = self.__parameters.lam_one.get_value()
+            lam_two = self.__parameters.lam_two.get_value()
+
+            a_values = {
+                '$A_1(t)$': lam_one * (1 - throughput_values),
+                '$A_2(t)$': lam_two * (1 - throughput_values)
+            }
+
+            return a_values
+
+        # Создаём массив множителей того же размера, что и y
+        multipliers_lam_one = np.ones_like(t_values)
+        multipliers_lam_two = np.ones_like(t_values)
+
+        for interval in params:
+            mask = (t_values >= interval.time_start) & (t_values < interval.time_end)
+            multipliers_lam_one[mask] = interval.parameters.lam_one.get_value()
+            multipliers_lam_two[mask] = interval.parameters.lam_two.get_value()
 
         a_values = {
-            '$A_1(t)$': lam_one * (1 - throughput_values),
-            '$A_2(t)$': lam_two * (1 - throughput_values)
+            '$A_1(t)$': multipliers_lam_one * (1 - throughput_values),
+            '$A_2(t)$': multipliers_lam_two * (1 - throughput_values)
         }
 
         return a_values
+
 
     def build_graph_positions(self, g) -> dict[str, tuple[int, int]]:
         for edge in self.__edges:
@@ -164,6 +183,3 @@ class Builder:
         counts = self.build_average_count(p_values)
 
         return counts[0] / self.__parameters.mu_one.get_value()
-
-
-
