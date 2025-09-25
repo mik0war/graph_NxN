@@ -119,6 +119,7 @@ class Visualiser:
     @staticmethod
     def display_latex_text(latex_code, font_size=8):
         fig = go.Figure()
+        print(latex_code)
         fig.add_annotation(
             text=latex_code,
             x=0.5, y=0.5,

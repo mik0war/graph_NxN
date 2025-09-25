@@ -56,7 +56,7 @@ class LambdaOne(Lambda):
 
 class LambdaTwo(Lambda):
     def _get_color(self):
-        return 'yellow'
+        return 'black'
 
     def _get_index(self):
         return 2

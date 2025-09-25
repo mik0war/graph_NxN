@@ -1,5 +1,5 @@
-from backend.data_types.labels import Label
-from backend.data_types.state import Edge, State
+from data_types.labels import Label
+from data_types.state import Edge, State
 
 
 class Coefficient:
