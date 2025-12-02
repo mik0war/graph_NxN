@@ -3,18 +3,49 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from matplotlib import pyplot as plt
 
+class StyleProvider:
+    def get_fig_with_default_style(self, title, x_label, y_label):
+        fig = go.Figure()
+        fig.update_layout(
+            title=title,
+            xaxis_title=x_label,
+            yaxis_title=y_label,
+            hovermode='x unified',
+            plot_bgcolor='white',
+            showlegend=True
+        )
+        fig.update_xaxes(
+            mirror=True,
+            ticks='outside',
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey'
+        )
+        fig.update_yaxes(
+            mirror=True,
+            ticks='outside',
+            showline=True,
+            linecolor='black',
+            gridcolor='lightgrey'
+        )
+
+        return fig
+
 
 class Visualiser:
 
-    def __init__(self, use_latex=True):
+    def __init__(self, use_latex=True, style_provider: StyleProvider=StyleProvider()):
         plt.rcParams.update({
             "text.usetex": use_latex,
             "text.latex.preamble": r"\usepackage{amsmath}"
         })
 
-    @staticmethod
-    def visualise_multiple_graphs(leg, t_values, p_i, title, x_label='Time (t)', y_label='Probability'):
-        fig = go.Figure()
+        self.style_provider = style_provider
+
+
+
+    def visualise_multiple_graphs(self, leg, t_values, p_i, title, x_label, y_label):
+        fig = self.style_provider.get_fig_with_default_style(title, x_label, y_label)
         for i in range(len(leg)):
             fig.add_trace(go.Scatter(
                 x=t_values,
@@ -24,17 +55,9 @@ class Visualiser:
                 hovertemplate=f'<b>{leg[i]}</b><br>t: %{{x}}<br>p: %{{y}}<extra></extra>'
             ))
 
-        fig.update_layout(
-            title=title,
-            xaxis_title=x_label,
-            yaxis_title=y_label,
-            hovermode='x unified',
-            showlegend=True
-        )
         fig.show()
 
-    @staticmethod
-    def visualise_multiple_graphs_styled(leg, styles, t_values, p_i, title, x_label='Time (t)', y_label='Probability'):
+    def visualise_multiple_graphs_styled(self, leg, styles, t_values, p_i, title, x_label, y_label):
         line_styles = {
             '-': 'solid',
             '--': 'dash',
@@ -42,7 +65,7 @@ class Visualiser:
             '-.': 'dashdot'
         }
 
-        fig = go.Figure()
+        fig = self.style_provider.get_fig_with_default_style(title, x_label, y_label)
         for i in range(len(leg)):
             fig.add_trace(go.Scatter(
                 x=t_values,
@@ -53,18 +76,10 @@ class Visualiser:
                 hovertemplate=f'<b>{leg[i]}</b><br>t: %{{x}}<br>p: %{{y}}<extra></extra>'
             ))
 
-        fig.update_layout(
-            title=title,
-            xaxis_title=x_label,
-            yaxis_title=y_label,
-            hovermode='x unified',
-            showlegend=True
-        )
         fig.show()
 
-    @staticmethod
-    def visualise_single_graph(leg, t_values, p_i, title, x_label='Time (t)', y_label='Probability'):
-        fig = go.Figure()
+    def visualise_single_graph(self, leg, t_values, p_i, title, x_label, y_label):
+        fig = self.style_provider.get_fig_with_default_style(title, x_label, y_label)
         fig.add_trace(go.Scatter(
             x=t_values,
             y=p_i,
@@ -72,14 +87,6 @@ class Visualiser:
             mode='lines',
             hovertemplate=f'<b>{leg}</b><br>t: %{{x}}<br>p: %{{y}}<extra></extra>'
         ))
-
-        fig.update_layout(
-            title=title,
-            xaxis_title=x_label,
-            yaxis_title=y_label,
-            hovermode='x unified',
-            showlegend=True
-        )
         fig.show()
 
     @staticmethod
@@ -115,11 +122,8 @@ class Visualiser:
         plt.axis('off')
         plt.tight_layout()
 
-
-    @staticmethod
-    def display_latex_text(latex_code, font_size=8):
-        fig = go.Figure()
-        print(latex_code)
+    def display_latex_text(self, latex_code, title, x_label, y_label, font_size=8):
+        fig = self.style_provider.get_fig_with_default_style(title, x_label, y_label)
         fig.add_annotation(
             text=latex_code,
             x=0.5, y=0.5,

@@ -3,6 +3,7 @@ from scipy.linalg import eig
 
 from buffer import Buffer
 from builder import Builder
+from data_types.parameters import Interval
 from visualiser import Visualiser
 
 
@@ -16,7 +17,6 @@ class Calculator:
         self.__g_values = None
         self.__p_i = None
         self.__t_values = None
-        self.t_values_public = self.__t_values
         self.__a = None
         self.__xsi = None
 
@@ -28,6 +28,10 @@ class Calculator:
         # Decorators
         self.visualise = self.check_calculate(self.visualise)
         self.visualise_throughput = self.check_calculate(self.visualise_throughput)
+
+    def get_t_values(self):
+        return self.__t_values
+
 
     def set_time_params(self, start, end, num):
         self.__num = num
@@ -111,23 +115,28 @@ class Calculator:
     def visualise(self, visualiser: Visualiser):
         leg = self.__builder.build_probabilities_legend()
 
-        visualiser.visualise_multiple_graphs(leg, self.__t_values, self.__p_i, 'Probability of SMO')
+        visualiser.visualise_multiple_graphs(leg, self.__t_values, self.__p_i, 'Probability of SMO', '', '')
 
-    def visualise_throughput(self, visualiser: Visualiser):
-        a_values = self.__builder.build_throughput_values(self.__p_i)
+    def visualise_spoof(self, visualiser: Visualiser):
+        a_values = self.__builder.build_spoof_coef(self.__p_i)
+        leg = 'Spoof'
+        visualiser.visualise_single_graph(leg, self.__t_values, a_values[leg], leg, '', '')
+
+    def visualise_throughput(self, visualiser: Visualiser, intervals: list[Interval] = None):
+        a_values = self.__builder.build_throughput_values(self.__p_i, intervals, self.__t_values)
 
         p_i_array = np.column_stack(list(a_values.values()))
-        visualiser.visualise_multiple_graphs(['$A_1(t)$', '$A_2(t)$'], self.__t_values, p_i_array, 'Throughput')
+        visualiser.visualise_multiple_graphs_styled(['$A_1(t)$', '$A_2(t)$'], ['-', '--'], self.__t_values, p_i_array, 'Throughput', '', '')
 
     def visualise_loss(self, visualiser: Visualiser):
         lose_probabilities = self.__builder.build_lose_probability(self.__p_i)
-        visualiser.visualise_single_graph('A(t)', self.__t_values, lose_probabilities, 'Loss')
+        visualiser.visualise_single_graph('A(t)', self.__t_values, lose_probabilities, 'Loss', '', '')
 
     def visualise_r(self, visualiser: Visualiser):
         a_values = self.__builder.build_throughput_values(self.__p_i)
 
         r = (a_values['$A_1(t)$'] - a_values['$A_2(t)$']) / a_values['$A_1(t)$']
-        visualiser.visualise_single_graph('R(t)', self.__t_values, r, 'R(t)')
+        visualiser.visualise_single_graph('R(t)', self.__t_values, r, 'R(t)', '', '')
 
     def calculate_average_count(self, visualiser: Visualiser):
         count = self.__builder.build_average_count(self.__p_i)
@@ -135,10 +144,17 @@ class Calculator:
         counts = np.column_stack(count)
         visualiser.visualise_multiple_graphs([
             'Count positive packets', 'Count negative packets'
-        ], self.__t_values, counts, title='Count of packets')
+        ], self.__t_values, counts, 'Count of packets', '', '')
+
+    def calculate_average_time(self, visualiser: Visualiser):
+        count = self.__builder.build_average_time(self.__p_i)
+
+        visualiser.visualise_single_graph('', self.__t_values, count, 'Time', '', '')
+
+
 
     def visualise_positive_throughput(self, visualiser: Visualiser):
         throughput = self.__builder.build_positive_throughput(self.__p_i)
         np.column_stack(list(throughput))
 
-        visualiser.visualise_single_graph('A(t)', self.__t_values, throughput, title='Positive throughput')
+        visualiser.visualise_single_graph('A(t)', self.__t_values, throughput, 'Positive throughput', '', '')

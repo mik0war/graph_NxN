@@ -2,8 +2,26 @@ import numpy as np
 from numpy import ndarray
 
 from data_types.equations_type import EquationSystem, MatrixElement
-from data_types.parameters import Parameters
+from data_types.parameters import Parameters, Interval
 from data_types.state import State, Edge
+
+class StatesDictionary:
+    def __init__(self):
+        self.__dict_by_index = {}
+        self.__dict_by_label = {}
+
+    def add(self, state, index, label):
+        self.__dict_by_label[label] = state
+        self.__dict_by_index[index] = state
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self.__dict_by_index[key]
+        if isinstance(key, str):
+            return self.__dict_by_label[key]
+        else:
+            raise TypeError('Wrong key format')
+
 
 class Builder:
     def __init__(self, parameters: Parameters):
@@ -21,9 +39,9 @@ class Builder:
             for j in range(buffer_size + 1):
                 if i + j > buffer_size:
                     continue
-
-                states[index] = State(index, i, j)
-                states[f'{i}{j}'] = states[index]
+                state = State(index, i, j)
+                states[index] = state
+                states[f'{i}{j}'] = state
                 index += 1
 
         self.__states = states
@@ -45,7 +63,7 @@ class Builder:
                     [i + j <= buffer_size and j - 1 >= 0, f'{i + 1}{j - 1}', self.__parameters.lam_two],
                     [j == 0 and i + 1 <= buffer_size, f'{i + 1}{j}', self.__parameters.lam_two],
                     [i - 1 >= 0, f'{i - 1}{j}', self.__parameters.mu_two],
-                    [j - 1 >= 0, f'{i}{j - 1}', self.__parameters.mu_one],
+                    [j - 1 >= 0 and i == 0, f'{i}{j - 1}', self.__parameters.mu_one],
                 ]
 
                 for condition in conditions:
@@ -101,15 +119,55 @@ class Builder:
 
         return np.sum(lose_probabilities, axis=0)
 
-    def build_throughput_values(self, p_values: ndarray):
+    def build_spoof_coef(self, p_values: ndarray):
+        return {'Spoof': np.sum([
+            p_values[:, self.__states[state].get_numeric_index()] *
+            p_values[:, self.__states[
+                            f'{int(state[0]) - 1}{int(state[1]) + 1}'
+                        ].get_numeric_index()
+            ]
+            for state in self.__states
+            if isinstance(state, str) and
+               self.__states[state].get_negative_index() >= 1
+        ] + [
+            p_values[:, self.__states[state].get_numeric_index()] *
+            p_values[:, self.__states[
+                            f'{int(state[0]) - 1}{int(state[1])}'
+                        ].get_numeric_index()
+            ]
+            for state in self.__states
+            if isinstance(state, str) and
+               self.__states[state].get_negative_index() > 0 and
+               self.__states[state].get_positive_index() == 0
+        ], axis=0)
+        }
+
+    def build_throughput_values(self, p_values: ndarray, params: list[Interval] = None, t_values=None):
         throughput_values: ndarray = self.build_lose_probability(p_values)
 
-        lam_one = self.__parameters.lam_one.get_value()
-        lam_two = self.__parameters.lam_two.get_value()
+        if params is None:
+            lam_one = self.__parameters.lam_one.get_value()
+            lam_two = self.__parameters.lam_two.get_value()
+
+            a_values = {
+                '$A_1(t)$': lam_one * (1 - throughput_values),
+                '$A_2(t)$': lam_two * (1 - throughput_values)
+            }
+
+            return a_values
+
+        # Создаём массив множителей того же размера, что и y
+        multipliers_lam_one = np.ones_like(t_values)
+        multipliers_lam_two = np.ones_like(t_values)
+
+        for interval in params:
+            mask = (t_values >= interval.time_start) & (t_values < interval.time_end)
+            multipliers_lam_one[mask] = interval.parameters.lam_one.get_value()
+            multipliers_lam_two[mask] = interval.parameters.lam_two.get_value()
 
         a_values = {
-            '$A_1(t)$': lam_one * (1 - throughput_values),
-            '$A_2(t)$': lam_two * (1 - throughput_values)
+            '$A_1(t)$': multipliers_lam_one * (1 - throughput_values),
+            '$A_2(t)$': multipliers_lam_two * (1 - throughput_values)
         }
 
         return a_values
@@ -165,5 +223,13 @@ class Builder:
 
         return counts[0] / self.__parameters.mu_one.get_value()
 
+    def build_average_time(self, p_values: ndarray):
+        count_positive = [
+            (p_values[:, self.__states[state].get_numeric_index()] *
+                        self.__states[state].get_positive_index()) /
+            self.__parameters.lam_one.get_value()
+            for state in self.__states
+            if isinstance(state, int)
+        ]
 
-
+        return np.sum(count_positive, axis=0)
